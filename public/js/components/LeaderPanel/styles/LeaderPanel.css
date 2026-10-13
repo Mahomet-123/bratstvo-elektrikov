@@ -1,0 +1,110 @@
+/* Компонент LeaderPanel — панель руководителя */
+.leader {
+  display: grid;
+  gap: 12px;
+}
+
+.leader__title {
+  margin: 0;
+  font-size: 20px;
+  color: #0f3d2e;
+}
+
+.leader__denied {
+  padding: 24px;
+  text-align: center;
+  color: #991b1b;
+}
+
+.leader__date-label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.leader__date {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.leader__block {
+  padding: 14px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.leader__block h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #0f3d2e;
+}
+
+.leader__row,
+.leader__object,
+.leader__visit,
+.leader__user {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.leader__row-users {
+  color: #64748b;
+}
+
+.leader__pending {
+  color: #b45309;
+}
+
+.leader__user-form {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.leader__user-form select,
+.leader__user-form input {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.leader__user-form button {
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.leader__user-list {
+  display: grid;
+}
+
+.leader__user span {
+  color: #64748b;
+}
+
+.leader__error {
+  color: #991b1b;
+  font-size: 13px;
+}

@@ -1,0 +1,99 @@
+/* Компонент DaysJournal — журнал работ по дням */
+.days {
+  display: grid;
+  gap: 12px;
+}
+
+.days__form {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.days__row {
+  display: flex;
+  gap: 12px;
+}
+
+.days__label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: #475569;
+  flex: 1;
+}
+
+.days__date,
+.days__hours,
+.days__text {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.days__submit {
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.days__mine {
+  margin: 0;
+  font-size: 14px;
+  color: #334155;
+}
+
+.days__list {
+  display: grid;
+  gap: 8px;
+}
+
+.days__empty {
+  padding: 16px;
+  text-align: center;
+  color: #64748b;
+}
+
+.days__item {
+  padding: 12px 14px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.days__item--dup {
+  outline: 2px solid #f59e0b;
+}
+
+.days__item-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.days__item-user {
+  color: #64748b;
+}
+
+.days__item-text {
+  margin: 0;
+  font-size: 14px;
+}
+
+.days__item-flag {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #b45309;
+}

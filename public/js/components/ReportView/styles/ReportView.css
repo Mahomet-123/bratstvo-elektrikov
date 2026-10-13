@@ -1,0 +1,139 @@
+/* Компонент ReportView — итог по объекту для клиента */
+.report {
+  display: grid;
+  gap: 12px;
+}
+
+.report__head {
+  padding: 14px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.report__title {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: #0f3d2e;
+}
+
+.report__meta {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.report__block {
+  padding: 14px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.report__block h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #0f3d2e;
+}
+
+.report__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.report__table th,
+.report__table td {
+  padding: 6px 4px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.report__days {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.report__total {
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.8;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.report__total-main {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f3d2e;
+}
+
+.report__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.report__print,
+.report__link {
+  flex: 1;
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.report__print {
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+}
+
+.report__link {
+  color: #0f3d2e;
+  background-color: #ecfdf5;
+  border: 1px solid #0f3d2e;
+}
+
+.report__link-out {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  font-size: 13px;
+  background-color: #f1f5f9;
+  border-radius: 10px;
+}
+
+.report__url {
+  color: #0f3d2e;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.report__copy {
+  justify-self: start;
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 14px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.report__copied {
+  color: #166534;
+}
+
+/* Печать: только отчёт, без интерфейса приложения */
+@media print {
+  .app__header,
+  .objectcard__tabs,
+  .report__actions,
+  .report__link-out {
+    display: none !important;
+  }
+  body {
+    background-color: #ffffff;
+  }
+}

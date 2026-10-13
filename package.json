@@ -1,0 +1,17 @@
+{
+  "name": "bratstvo-elektrikov",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Учёт объектов для электромонтажной бригады: расчёт по прайсу, закупки с фото накладных, офлайн-записи, отчёты клиентам",
+  "scripts": {
+    "seed": "python scripts/parse-price-pdf.py && python scripts/build-seed.py",
+    "installer": "python scripts/build-installer.py",
+    "check": "node scripts/check-syntax.js",
+    "gas:push": "clasp push --force",
+    "gas:deploy": "clasp deploy -i AKfycbyKdQWI77sm4DvsAN_ejI6aGx8oPMhvZhz9ps1kasZCfK3s9cNB7qJrN-his26Ue_Hn",
+    "gas:open": "clasp open"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2"
+  }
+}

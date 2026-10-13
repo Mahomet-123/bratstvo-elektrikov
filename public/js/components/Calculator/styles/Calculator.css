@@ -1,0 +1,171 @@
+/* Компонент Calculator — калькулятор по прайсу */
+.calc {
+  display: grid;
+  gap: 12px;
+}
+
+.calc__search {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.calc__coefs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  background-color: #f1f5f9;
+  border-radius: 10px;
+}
+
+.calc__coefs-title {
+  font-weight: 600;
+  color: #334155;
+}
+
+.calc__coef {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.calc__coefs-empty {
+  color: #94a3b8;
+}
+
+.calc__section {
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.calc__section-title {
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f3d2e;
+  cursor: pointer;
+}
+
+.calc__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.calc__item-name {
+  font-size: 14px;
+}
+
+.calc__item-meta {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.calc__item-add {
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.calc__draft {
+  padding: 14px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.calc__draft-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #0f3d2e;
+}
+
+.calc__line {
+  display: grid;
+  grid-template-columns: 1fr 64px 36px 64px auto 28px;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.calc__line-name,
+.calc__line-qty,
+.calc__line-coef {
+  min-height: 40px;
+  padding: 4px 8px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.calc__line-unit {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.calc__line-sum {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.calc__line-remove {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  color: #991b1b;
+  background-color: #fee2e2;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.calc__total {
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.calc__rule {
+  margin: 6px 0 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.calc__save {
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.calc__save:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}

@@ -1,0 +1,180 @@
+/* Компонент ObjectsList — список объектов */
+.objects__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.objects__title {
+  margin: 0;
+  font-size: 22px;
+  color: #0f3d2e;
+}
+
+.objects__add {
+  min-height: 40px;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.objects__list {
+  display: grid;
+  gap: 12px;
+}
+
+.objects__empty {
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}
+
+.objects__card {
+  padding: 16px;
+  background-color: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(15, 61, 46, 0.06);
+  cursor: pointer;
+}
+
+.objects__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.objects__number {
+  font-size: 13px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.objects__status {
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.objects__status--open {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.objects__status--closed {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+.objects__name {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.objects__client {
+  margin: 0 0 2px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.objects__meta {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.objects__actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.objects__close,
+.objects__resume {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #334155;
+  cursor: pointer;
+}
+
+.objects__dialog {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: rgba(15, 23, 42, 0.5);
+}
+
+.objects__form {
+  width: 100%;
+  max-width: 380px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.objects__form h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #0f3d2e;
+}
+
+.objects__form label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.objects__form input {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.objects__form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.objects__cancel,
+.objects__save {
+  min-height: 40px;
+  padding: 8px 16px;
+  font-size: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.objects__cancel {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.objects__save {
+  background-color: #0f3d2e;
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+}

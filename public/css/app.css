@@ -1,0 +1,106 @@
+/* ============================================
+   Оболочка приложения «Братство Электриков»
+   Дизайн-токены и базовая раскладка (BEM: app, app__header, app__main…)
+   ============================================ */
+
+:root {
+  --color-bg: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-primary: #0f3d2e;
+  --color-primary-soft: #ecfdf5;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-border: #cbd5e1;
+  --color-danger: #991b1b;
+  --color-warn: #b45309;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(15, 61, 46, 0.06);
+}
+
+.app {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.app__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.app__brand {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.app__main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app__loading,
+.app__error {
+  padding: 24px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.app__error {
+  color: var(--color-danger);
+}
+
+.app__toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  max-width: 90vw;
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #ffffff;
+  background-color: #1e293b;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+  z-index: 100;
+}
+
+.app__toast--error {
+  background-color: var(--color-danger);
+}
+
+.app__toast--ok {
+  background-color: #166534;
+}
+
+/* Тема устройства: тёмная — тогда поверхности темнеют, текст светлеет */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-text: #e2e8f0;
+    --color-text-muted: #94a3b8;
+    --color-border: #475569;
+    --color-primary: #14532d;
+    --color-primary-soft: #052e16;
+  }
+  .app__toast {
+    color: #0f172a;
+    background-color: #e2e8f0;
+  }
+  .app__toast--error {
+    background-color: #fecaca;
+  }
+  .app__toast--ok {
+    background-color: #bbf7d0;
+  }
+}

@@ -1,0 +1,59 @@
+/* Компонент Login — экран входа */
+.login {
+  max-width: 360px;
+  margin: 48px auto;
+  padding: 24px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 61, 46, 0.08);
+}
+
+.login__title {
+  margin: 0 0 20px;
+  font-size: 20px;
+  text-align: center;
+  color: #0f3d2e;
+}
+
+.login__field {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.login__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.login__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px; /* не меньше 16px — иначе Safari на iPhone зумит страницу */
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.login__submit {
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.login__hint {
+  margin: 16px 0 0;
+  font-size: 13px;
+  text-align: center;
+  color: #64748b;
+}

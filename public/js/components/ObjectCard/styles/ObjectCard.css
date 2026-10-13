@@ -1,0 +1,84 @@
+/* Компонент ObjectCard — карточка объекта */
+.objectcard {
+  display: grid;
+  gap: 12px;
+}
+
+.objectcard__loading {
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}
+
+.objectcard__back {
+  justify-self: start;
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #334155;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.objectcard__head {
+  padding: 14px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.objectcard__number {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.objectcard__title {
+  margin: 2px 0 4px;
+  font-size: 19px;
+  color: #0f3d2e;
+}
+
+.objectcard__meta {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.objectcard__status {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #166534;
+}
+
+.objectcard__tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.objectcard__tab {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.objectcard__tab--active {
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border-color: #0f3d2e;
+}
+
+.objectcard__body {
+  min-height: 200px;
+}

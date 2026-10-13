@@ -1,0 +1,9 @@
+# Зависимости и служебное
+node_modules/
+.check/
+*.log
+
+# Система
+.DS_Store
+Thumbs.db
+desktop.ini
