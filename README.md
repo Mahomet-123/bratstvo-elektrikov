@@ -28,6 +28,13 @@
 5. Тап по индикатору — ручная отправка
 6. Повторная отправка одной и той же записи дублем не считается (у каждой свой ID)
 
+## Где что лежит
+
+- **Сайт (PWA):** https://mahomet-123.github.io/bratstvo-elektrikov/ — GitHub Pages, сборка из `public/` (`.github/workflows/deploy-pages.yml`, каждый пуш в `main` обновляет сайт)
+- **Репозиторий:** https://github.com/Mahomet-123/bratstvo-elektrikov (публичный — иначе Pages не работает на бесплатном тарифе)
+- **API (Apps Script):** `https://script.google.com/macros/s/AKfycbyKdQWI77sm4DvsAN_ejI6aGx8oPMhvZhz9ps1kasZCfK3s9cNB7qJrN-his26Ue_Hn/exec`
+- **`.gitignore`:** в репозиторий не идут `node_modules/` (ставится `npm install`), `.check/`, `*.log`, системный мусор — остальное всё, 64 файла
+
 ## Деплой
 
 ### Основной путь: npm-скрипты через clasp
