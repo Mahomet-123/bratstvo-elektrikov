@@ -8,9 +8,11 @@
 
 import data from '../../db/dataManager.js';
 import queue from '../../cache/queue.js';
-import { el, qs, today, fmtDate } from '../../utils/dom.js';
+import { el, qs, today, fmtDate, loadCss } from '../../utils/dom.js';
 import toast from '../../utils/toast.js';
-import './styles/DaysJournal.css';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/DaysJournal/styles/DaysJournal.css');
 
 /** Рендер журнала: форма + список дней по убыванию даты. */
 export function render(root, { objectId, records, onChange }) {

@@ -12,6 +12,7 @@
     "gas:open": "clasp open"
   },
   "devDependencies": {
-    "@google/clasp": "^2.4.2"
+    "@google/clasp": "^2.4.2",
+    "puppeteer-core": "^25.13.0"
   }
 }

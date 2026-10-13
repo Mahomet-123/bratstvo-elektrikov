@@ -8,10 +8,12 @@
 
 import data from '../../db/dataManager.js';
 import queue from '../../cache/queue.js';
-import { el, qs } from '../../utils/dom.js';
+import { el, qs, loadCss } from '../../utils/dom.js';
 import { money, unitLabel } from '../../utils/format.js';
 import toast from '../../utils/toast.js';
-import './styles/Calculator.css';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/Calculator/styles/Calculator.css');
 
 /** Состояние черновика расчёта. */
 let draft = [];

@@ -9,10 +9,12 @@
 import data from '../../db/dataManager.js';
 import queue from '../../cache/queue.js';
 import PhotoUploader from '../PhotoUploader/PhotoUploader.js';
-import { el, qs, fmtDate } from '../../utils/dom.js';
+import { el, qs, fmtDate, loadCss } from '../../utils/dom.js';
 import { money } from '../../utils/format.js';
 import toast from '../../utils/toast.js';
-import './styles/Purchases.css';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/Purchases/styles/Purchases.css');
 
 let photos = [];
 

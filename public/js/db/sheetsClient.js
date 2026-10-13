@@ -55,6 +55,11 @@ const sheets = {
     return api.post('users:save', { token, data: dataPayload });
   },
 
+  /** Смена собственного кода доступа. */
+  changeOwnCode(token, oldCode, newCode) {
+    return api.post('users:change-own-code', { token, oldCode, newCode });
+  },
+
   /** Записи (РАСЧЁТ / ДЕНЬ / ЗАКУПКА) пачкой — из очереди или напрямую. */
   appendRecords(token, objectId, items) {
     return api.post('records:append', { token, objectId, items });

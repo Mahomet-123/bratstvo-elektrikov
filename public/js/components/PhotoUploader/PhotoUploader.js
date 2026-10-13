@@ -7,9 +7,11 @@
  */
 
 import webp from '../../utils/webp.js';
-import { el, qs } from '../../utils/dom.js';
+import { el, qs, loadCss } from '../../utils/dom.js';
 import toast from '../../utils/toast.js';
-import './styles/PhotoUploader.css';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/PhotoUploader/styles/PhotoUploader.css');
 
 /**
  * Виджет прикрепления фото. onAdd(photo) вызывается для каждого сжатого снимка:

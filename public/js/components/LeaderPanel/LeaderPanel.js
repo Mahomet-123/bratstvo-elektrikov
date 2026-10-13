@@ -9,8 +9,10 @@
 
 import data from '../../db/dataManager.js';
 import sheets from '../../db/sheetsClient.js';
-import { el, qs, today } from '../../utils/dom.js';
-import './styles/LeaderPanel.css';
+import { el, qs, today, loadCss } from '../../utils/dom.js';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/LeaderPanel/styles/LeaderPanel.css');
 
 export async function render(root) {
   const isLeader = data.state.user && data.state.user.role === 'руководитель';
@@ -41,10 +43,31 @@ export async function render(root) {
         <h2>Мастера: выдать логин и код</h2>
         <div class="leader__users"></div>
       </section>
+      <section class="leader__block">
+        <h2>Сменить свой код доступа</h2>
+        <form class="leader__code-form">
+          <input name="oldCode" type="password" placeholder="Текущий код" required>
+          <input name="newCode" type="password" placeholder="Новый код (от 4 символов)" minlength="4" required>
+          <button type="submit">Сменить код</button>
+        </form>
+      </section>
     </div>`;
 
   const dateInput = qs('.leader__date', root);
   dateInput.addEventListener('change', () => loadDay(dateInput.value));
+
+  qs('.leader__code-form', root).addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.target;
+    try {
+      const result = await sheets.changeOwnCode(data.state.token, form.oldCode.value, form.newCode.value);
+      if (!result.ok) throw new Error(result.error);
+      alert('Код изменён. Используй новый код при следующем входе.');
+      form.reset();
+    } catch (e) {
+      alert(e.message || 'Не удалось сменить код');
+    }
+  });
 
   await loadDay(dateInput.value);
   await loadVisits();

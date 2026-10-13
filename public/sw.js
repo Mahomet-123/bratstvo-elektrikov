@@ -6,7 +6,7 @@
  * ============================================
  */
 
-const CACHE = 'bratstvo-v1';
+const CACHE = 'bratstvo-v2';
 const SHELL = [
   './',
   'index.html',

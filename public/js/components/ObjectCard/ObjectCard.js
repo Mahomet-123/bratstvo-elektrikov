@@ -11,8 +11,10 @@ import Calculator from '../Calculator/Calculator.js';
 import DaysJournal from '../DaysJournal/DaysJournal.js';
 import Purchases from '../Purchases/Purchases.js';
 import ReportView from '../ReportView/ReportView.js';
-import { el, qs } from '../../utils/dom.js';
-import './styles/ObjectCard.css';
+import { el, qs, loadCss } from '../../utils/dom.js';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/ObjectCard/styles/ObjectCard.css');
 
 const TABS = [
   { id: 'calc', title: 'Расчёт' },

@@ -10,8 +10,10 @@
 import queue from '../../cache/queue.js';
 import sheets from '../../db/sheetsClient.js';
 import data from '../../db/dataManager.js';
-import { el } from '../../utils/dom.js';
-import './styles/SyncIndicator.css';
+import { el, loadCss } from '../../utils/dom.js';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/SyncIndicator/styles/SyncIndicator.css');
 
 const STATUS = {
   ok: { cls: 'sync--ok', text: 'Всё отправлено' },

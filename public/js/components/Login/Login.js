@@ -9,9 +9,11 @@
 import sheets from '../../db/sheetsClient.js';
 import data from '../../db/dataManager.js';
 import storage from '../../cache/storageAdapter.js';
-import { el, qs } from '../../utils/dom.js';
+import { el, qs, loadCss } from '../../utils/dom.js';
 import toast from '../../utils/toast.js';
-import './styles/Login.css';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/Login/styles/Login.css');
 
 let options = [];
 

@@ -96,6 +96,33 @@
   cursor: pointer;
 }
 
+.leader__code-form {
+  display: grid;
+  gap: 8px;
+}
+
+.leader__code-form input {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.leader__code-form button {
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
 .leader__user-list {
   display: grid;
 }

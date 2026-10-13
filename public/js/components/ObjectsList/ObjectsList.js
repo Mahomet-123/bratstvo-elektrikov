@@ -9,9 +9,11 @@
 import data from '../../db/dataManager.js';
 import sheets from '../../db/sheetsClient.js';
 import queue from '../../cache/queue.js';
-import { el, qs, fmtDate } from '../../utils/dom.js';
+import { el, qs, fmtDate, loadCss } from '../../utils/dom.js';
 import toast from '../../utils/toast.js';
-import './styles/ObjectsList.css';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/ObjectsList/styles/ObjectsList.css');
 
 export async function render(root, { navigate }) {
   const objects = await data.objects();

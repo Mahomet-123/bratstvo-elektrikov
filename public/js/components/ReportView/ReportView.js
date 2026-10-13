@@ -8,9 +8,11 @@
  */
 
 import config from '../../config.js';
-import { el, qs, fmtDate } from '../../utils/dom.js';
+import { el, qs, fmtDate, loadCss } from '../../utils/dom.js';
 import { money } from '../../utils/format.js';
-import './styles/ReportView.css';
+
+// Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
+loadCss('js/components/ReportView/styles/ReportView.css');
 
 export function render(root, { objectId, object, records }) {
   const works = records.filter(r => r.type === 'РАСЧЁТ' && !r.flags.includes('удалено'));

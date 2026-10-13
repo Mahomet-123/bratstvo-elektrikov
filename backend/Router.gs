@@ -66,6 +66,9 @@ const Router = (() => {
       case 'users:save':
         requireLeader(user);
         return Users.save(user, body.data || {});
+      case 'users:change-own-code':
+        requireUser(user);
+        return Users.changeOwnCode(user, body.oldCode, body.newCode);
       case 'status:report':
         requireUser(user);
         return Visits.reportStatus(user.login, body.pending, body.comment);
