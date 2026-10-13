@@ -1,0 +1,26 @@
+name: Деплой сайта на GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверка кода
+        uses: actions/checkout@v4
+
+      - name: Сборка статики из public/
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Публикация на GitHub Pages
+        uses: actions/deploy-pages@v4
