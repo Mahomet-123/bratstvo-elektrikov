@@ -51,6 +51,8 @@ const Records = (() => {
       appended.push(item.id);
     });
 
+    // Применяем записи сразу: чтение таблицы может отставать на пару секунд
+    SpreadsheetApp.flush();
     return { ok: true, appended, duplicates };
   }
 

@@ -16,14 +16,21 @@ const Users = (() => {
     return rows.map(r => ({
       login: String(r['Логин'] || ''),
       name: String(r['Имя'] || ''),
-      code: String(r['Код доступа'] || ''),
+      // Код «0000» таблица хранит числом 0 — «|| ''» превратил бы его в пустую строку,
+      // поэтому значения читаются через явную проверку на null
+      code: cell(r['Код доступа']),
       role: String(r['Роль'] || ''),           // «руководитель» или «мастер»
       active: String(r['Статус'] || '') === 'активен',
-      created: String(r['Создан'] || ''),
-      lastVisit: String(r['Последний вход'] || ''),
-      token: String(r['Токен сессии'] || ''),
-      tokenUntil: String(r['Токен до'] || ''),
+      created: cell(r['Создан']),
+      lastVisit: cell(r['Последний вход']),
+      token: cell(r['Токен сессии']),
+      tokenUntil: cell(r['Токен до']),
     })).filter(u => u.login);
+  }
+
+  /** Значение ячейки строкой: 0 и false не превращаются в пустую строку. */
+  function cell(v) {
+    return v === null || v === undefined ? '' : String(v);
   }
 
   function byLogin(login) {
@@ -42,7 +49,7 @@ const Users = (() => {
     const user = byLogin(login);
     if (!user) return { ok: false, error: 'Такого логина нет' };
     if (!user.active) return { ok: false, error: 'Профиль не активирован руководителем' };
-    if (user.code !== String(code || '')) return { ok: false, error: 'Неверный код доступа' };
+    if (!codeMatches(user.code, code)) return { ok: false, error: 'Неверный код доступа' };
 
     const token = Utilities.getUuid();
     const until = new Date(Date.now() + CONFIG.SESSION_DAYS * 86400000);
@@ -53,6 +60,18 @@ const Users = (() => {
     });
     Visits.log(login, 'вход', device);
     return { ok: true, user: publicUser(user), token };
+  }
+
+  /**
+   * Сравнение кодов доступа с учётом превращения «0000» в число 0 в таблице.
+   * Точное совпадение строк, либо числовое — когда обе стороны цифровые.
+   */
+  function codeMatches(stored, entered) {
+    const a = String(stored === undefined || stored === null ? '' : stored).trim();
+    const b = String(entered === undefined || entered === null ? '' : entered).trim();
+    if (a === b) return true;
+    if (a && b && !isNaN(Number(a)) && !isNaN(Number(b)) && Number(a) === Number(b)) return true;
+    return false;
   }
 
   /** Проверка токена сессии. Возвращает пользователя или null. */
@@ -99,7 +118,7 @@ const Users = (() => {
   /** Сменить собственный код доступа. */
   function changeOwnCode(actor, oldCode, newCode) {
     if (!actor) throw new Error('Нужен вход');
-    if (actor.code !== String(oldCode || '')) throw new Error('Старый код неверный');
+    if (!codeMatches(actor.code, oldCode)) throw new Error('Старый код неверный');
     if (String(newCode || '').length < 4) throw new Error('Код — минимум 4 символа');
     updateRow(actor.login, { 'Код доступа': String(newCode) });
     return { ok: true };

@@ -72,10 +72,12 @@ function card(obj, lastDate, isLeader, navigate) {
     if (!confirm(`Закрыть объект «${obj.name}»? Лист уедет в архив года, вернуть можно будет кнопкой «Возобновить работы».`)) return;
     try {
       await sheets.objectsClose(data.state.token, obj.id);
+      // Статус меняем сразу в интерфейсе, сервер догонит чтением
       data.dropObjectCache(obj.id);
-      await data.refreshObjects();
+      data.patchObjectLocal(obj.id, { status: 'закрыт' });
       render(document.getElementById('app-root'), { navigate });
       toast.ok('Объект закрыт, лист в архиве');
+      data.refreshObjects(); // в фоне подтянем точное состояние
     } catch (e) {
       toast.error(e.message);
     }
@@ -86,9 +88,10 @@ function card(obj, lastDate, isLeader, navigate) {
     try {
       await sheets.objectsResume(data.state.token, obj.id);
       data.dropObjectCache(obj.id);
-      await data.refreshObjects();
+      data.patchObjectLocal(obj.id, { status: 'в работе' });
       render(document.getElementById('app-root'), { navigate });
       toast.ok('Объект снова в работе, история на месте');
+      data.refreshObjects(); // в фоне подтянем точное состояние
     } catch (e) {
       toast.error(e.message);
     }
@@ -126,11 +129,23 @@ function createDialog(root, navigate) {
     };
     try {
       try {
-        await sheets.objectsCreate(data.state.token, payload);
+        const created = await sheets.objectsCreate(data.state.token, payload);
+        // Показываем объект сразу из ответа сервера — чтение таблицы отстаёт на пару секунд
+        if (created.ok && created.object) {
+          data.addObjectLocal(created.object);
+          overlay.remove();
+          render(document.getElementById('app-root'), { navigate });
+          toast.ok('Объект создан');
+          data.refreshObjects(); // в фоне подтянем точное состояние
+          return;
+        }
       } catch (e) {
         // Нет сети — объект встанет в очередь и создастся сам при подключении
         await queue.enqueue('objects:create', { data: payload });
+        overlay.remove();
+        render(document.getElementById('app-root'), { navigate });
         toast.ok('Нет связи — объект создастся при появлении интернета');
+        return;
       }
       await data.refreshObjects();
       overlay.remove();

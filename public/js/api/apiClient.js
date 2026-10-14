@@ -6,6 +6,8 @@
  * ============================================
  */
 
+import config from '../config.js';
+
 const api = {
   /** GET-действие: ?action=...&token=... */
   async get(action, params = {}) {

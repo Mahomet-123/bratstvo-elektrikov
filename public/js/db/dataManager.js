@@ -117,6 +117,25 @@ async function refreshObjects() {
   return state.objects;
 }
 
+/**
+ * Оптимистичное добавление созданного объекта: сервер уже подтвердил создание,
+ * но чтение таблицы может отстать на пару секунд — показываем сразу.
+ */
+function addObjectLocal(obj) {
+  if (!obj || !obj.id) return;
+  if (state.objects.some(o => o.id === obj.id)) return;
+  state.objects = [...state.objects, obj];
+  storage.local.set('objects', state.objects);
+  window.dispatchEvent(new CustomEvent('objects:changed'));
+}
+
+/** Оптимистичное изменение полей объекта (закрытие/возобновление). */
+function patchObjectLocal(id, patch) {
+  state.objects = state.objects.map(o => (o.id === id ? { ...o, ...patch } : o));
+  storage.local.set('objects', state.objects);
+  window.dispatchEvent(new CustomEvent('objects:changed'));
+}
+
 /** Записи объекта — лениво, с кэшем в памяти (обновление по требованию). */
 async function objectRecords(id, { force = false } = {}) {
   if (!force && state.objectCache.has(id)) return state.objectCache.get(id);
@@ -127,11 +146,66 @@ async function objectRecords(id, { force = false } = {}) {
   return data;
 }
 
+/**
+ * Сверка записей объекта: серверные + локальные ещё не отправленные.
+ * Чтение таблицы отстаёт от записи, поэтому новые записи сначала живут в кэше,
+ * а при следующей сверке подтягиваются с сервера (дедупликация по id).
+ */
+async function syncRecords(id) {
+  const cached = state.objectCache.get(id);
+  let records = [];
+  let object = cached ? cached.object : null;
+  try {
+    const result = await sheets.object(state.token, id);
+    if (result.ok) {
+      records = result.records || [];
+      object = result.object || object;
+    }
+  } catch (e) { /* офлайн — остаёмся на кэше */ }
+  if (cached) {
+    const serverIds = new Set(records.map(r => r.id));
+    const localOnly = cached.records.filter(r => !serverIds.has(r.id));
+    records = [...records, ...localOnly];
+  }
+  const data = { object, records };
+  state.objectCache.set(id, data);
+  return data;
+}
+
+/** Добавить запись в кэш объекта сразу (до подтверждения сервером). */
+function applyLocalRecord(id, item) {
+  let entry = state.objectCache.get(id);
+  if (!entry) return;
+  if (entry.records.some(r => r.id === item.id)) return;
+  entry.records = [...entry.records, normalizeLocal(item)];
+  state.objectCache.set(id, entry);
+}
+
+/** Локальная запись в том же виде, что отдаёт сервер. */
+function normalizeLocal(item) {
+  return {
+    type: item.type || '',
+    date: item.date || new Date().toISOString(),
+    user: item.user || '',
+    name: item.name || '',
+    unit: item.unit || '',
+    qty: Number(item.qty) || 0,
+    coef: Number(item.coef) || 1,
+    price: Number(item.price) || 0,
+    sum: Number(item.sum) || 0,
+    comment: item.comment || '',
+    photoIds: item.photoIds || '',
+    id: item.id || '',
+    flags: item.flags || '',
+  };
+}
+
 function dropObjectCache(id) {
   state.objectCache.delete(id);
 }
 
 export default {
   state, setSession, clearSession,
-  prices, objects, refreshObjects, objectRecords, dropObjectCache, saveObjects,
+  prices, objects, refreshObjects, addObjectLocal, patchObjectLocal,
+  objectRecords, syncRecords, applyLocalRecord, dropObjectCache, saveObjects,
 };

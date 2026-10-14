@@ -177,6 +177,15 @@ function notify() {
 }
 
 /** Автоотправка при появлении сети. */
-window.addEventListener('online', () => flush());
+/** Автоотправка при появлении сети: сбрасываем отсрочку повторов и шлём сразу. */
+window.addEventListener('online', async () => {
+  const items = await all();
+  for (const item of items) {
+    item.nextTryAt = 0;
+    item.attempts = 0;
+    await update(item);
+  }
+  await flush();
+});
 
 export default { enqueue, all, flush, flushNow, notify };

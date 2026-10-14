@@ -42,7 +42,7 @@ function check(name, ok, detail = '') {
   await page.select('#login-select', 'Руководитель');
   await page.type('#login-code', '0000');
   await page.click('.login__submit');
-  await page.waitForSelector('.objects__title', { timeout: 20000 });
+  await page.waitForSelector('.objects__title', { timeout: 45000 });
   check('Вход выполнен, список объектов открылся', true);
   const chipText = await page.$eval('.sync__text', el => el.textContent);
   check('Индикатор отправки на месте', chipText.includes('отправлено'), chipText);
@@ -68,11 +68,14 @@ function check(name, ok, detail = '') {
       .find(c => c.textContent.includes('Проверка'));
     card.click();
   });
-  await page.waitForSelector('.objectcard__title', { timeout: 15000 });
+  await page.waitForSelector('.objectcard__title', { timeout: 30000 });
   check('Карточка объекта открылась', true);
-  await page.waitForSelector('.calc__section', { timeout: 15000 });
+  await page.waitForSelector('.calc__section', { timeout: 30000 });
   const sections = await page.$$eval('.calc__section', s => s.length);
   check('Разделы прайса загрузились', sections >= 6, 'разделов: ' + sections);
+  // Раскрываем первый раздел прайса — секции свёрнуты по умолчанию
+  await page.$eval('.calc__section', el => { el.open = true; });
+  await new Promise(r => setTimeout(r, 300));
   const firstItem = await page.$('.calc__section .calc__item .calc__item-add');
   await firstItem.click();
   check('Позиция добавлена в расчёт', await page.$('.calc__line') !== null);
@@ -112,7 +115,7 @@ function check(name, ok, detail = '') {
 
   // 7. Отчёт для клиента
   await page.click('.objectcard__tab[data-tab=report]');
-  await page.waitForSelector('.report__total-main', { timeout: 10000 });
+  await page.waitForSelector('.report__total-main', { timeout: 30000 });
   const total = await page.$eval('.report__total-main', el => el.textContent);
   check('Отчёт считается с итогами', /Итого/.test(total), total);
   const supply = await page.$$eval('.report__total div', els => els.map(e => e.textContent).find(t => t.includes('Снабжение')));
@@ -121,10 +124,14 @@ function check(name, ok, detail = '') {
   // 8. Панель руководителя
   await page.goto(BASE + '/#/leader', { waitUntil: 'networkidle0' });
   await page.waitForSelector('.leader__title', { timeout: 15000 });
+  // Сводка собирается сканированием листов объектов — на холодном старте до ~20 секунд
+  await page.waitForFunction(() => document.querySelectorAll('.leader__row').length >= 1, { timeout: 45000 });
   const summaryRows = await page.$$eval('.leader__row', els => els.map(e => e.textContent).join(' | '));
   check('Сводка записей за дату', summaryRows.includes('Проверка') || summaryRows.includes('записей'), summaryRows.slice(0, 160));
+  await page.waitForFunction(() => document.querySelectorAll('.leader__visit').length >= 1, { timeout: 45000 });
   const visits = await page.$$eval('.leader__visit', els => els.length);
   check('Журнал посещений заполнен', visits >= 1, 'записей: ' + visits);
+  await page.waitForFunction(() => document.querySelectorAll('.leader__user').length >= 51, { timeout: 45000 });
   const usersList = await page.$$eval('.leader__user', els => els.length);
   check('Управление мастерами на месте', usersList >= 51, 'профилей: ' + usersList);
 
@@ -134,19 +141,20 @@ function check(name, ok, detail = '') {
     const card = Array.from(document.querySelectorAll('.objects__card')).find(c => c.textContent.includes('Проверка'));
     card.click();
   });
-  await page.waitForSelector('.objectcard__tab[data-tab=days]', { timeout: 15000 });
+  await page.waitForSelector('.objectcard__tab[data-tab=days]', { timeout: 30000 });
   await page.click('.objectcard__tab[data-tab=days]');
   await page.waitForSelector('.days__form', { timeout: 10000 });
-  await page.context().setOffline(true);
+  const cdp = await page.createCDPSession();
+  await cdp.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
   await page.type('.days__text', 'Тест офлайн-записи');
   await page.click('.days__submit');
   await sleep(2500);
   const offlineChip = await page.$eval('.sync__text', el => el.textContent);
   check('Офлайн: индикатор показывает очередь', /очереди|Ошибка/.test(offlineChip), offlineChip);
-  await page.context().setOffline(false);
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await page.waitForFunction(
     () => document.querySelector('.sync__text') && document.querySelector('.sync__text').textContent.includes('Всё отправлено'),
-    { timeout: 30000 });
+    { timeout: 90000 });
   check('После сети запись ушла автоматически', true, await page.$eval('.sync__text', el => el.textContent));
 
   // Итоги

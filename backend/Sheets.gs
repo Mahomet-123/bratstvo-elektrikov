@@ -54,7 +54,17 @@ const Sheets = (() => {
     const h = headers(sheet);
     const values = h.map(key => obj[key] !== undefined ? obj[key] : '');
     sheet.appendRow(values);
-    return sheet.getLastRow();
+    const row = sheet.getLastRow();
+    // Коды доступа вида «0000» Sheets превращает в число 0 — пишем такие значения текстом
+    h.forEach((key, i) => {
+      const v = obj[key];
+      if (typeof v === 'string' && /^\d+$/.test(v)) {
+        const cell = sheet.getRange(row, i + 1);
+        cell.setNumberFormat('@');
+        cell.setValue(v);
+      }
+    });
+    return row;
   }
 
   /** Номер строки (1-based) по точному совпадению значения в колонке, или -1. */

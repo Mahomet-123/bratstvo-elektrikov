@@ -53,20 +53,25 @@ export function render(root, { objectId, records, onChange }) {
   qs('.purchases__form', root).addEventListener('submit', async event => {
     event.preventDefault();
     const form = event.target;
-    const qty = Number(form.qty.value) || 0;
-    const price = Number(form.price.value) || 0;
+    // Поля формы читаем по классам: у inputs нет атрибута name
+    const nameInput = qs('.purchases__name', form);
+    const qtyInput = qs('.purchases__qty', form);
+    const priceInput = qs('.purchases__price', form);
+    const commentInput = qs('.purchases__comment', form);
+    const qty = Number(qtyInput.value) || 0;
+    const price = Number(priceInput.value) || 0;
     const record = {
       id: crypto.randomUUID(),
       type: 'ЗАКУПКА',
       date: new Date().toISOString(),
       user: data.state.user.login,
-      name: form.name.value.trim().slice(0, 120),
+      name: nameInput.value.trim().slice(0, 120),
       unit: 'шт.',
       qty,
       coef: 1,
       price,
       sum: Math.round(qty * price),
-      comment: form.comment.value.trim().slice(0, 200),
+      comment: commentInput.value.trim().slice(0, 200),
       photoIds: '',
     };
     if (!record.name) { toast.error('Укажите материал'); return; }
@@ -76,6 +81,8 @@ export function render(root, { objectId, records, onChange }) {
       record,
       photos: photos.map(p => ({ base64: p.base64, mime: p.mime })),
     });
+    // Локально в кэш сразу — сервер подтвердит при следующей сверке
+    data.applyLocalRecord(objectId, record);
     toast.ok('Закупка записана' + (navigator.onLine ? '' : ' (уйдёт при связи)'));
     photos = [];
     form.reset();

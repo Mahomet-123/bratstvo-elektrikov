@@ -49,23 +49,29 @@ export function render(root, { objectId, records, onChange }) {
   qs('.days__form', root).addEventListener('submit', async event => {
     event.preventDefault();
     const form = event.target;
+    // Поля формы читаем по классам: у inputs нет атрибута name
+    const dateInput = qs('.days__date', form);
+    const hoursInput = qs('.days__hours', form);
+    const textInput = qs('.days__text', form);
     const item = {
       id: crypto.randomUUID(),
       type: 'ДЕНЬ',
-      date: new Date(form.date.value + 'T12:00:00').toISOString(),
+      date: new Date(dateInput.value + 'T12:00:00').toISOString(),
       user: data.state.user.login,
-      name: form.text.value.trim().slice(0, 200),
+      name: textInput.value.trim().slice(0, 200),
       unit: 'ч',
-      qty: Number(form.hours.value) || 0,
+      qty: Number(hoursInput.value) || 0,
       coef: 1,
       price: 0,
       sum: 0,
     };
     if (!item.name) { toast.error('Опишите, что сделано'); return; }
     await queue.enqueue('records:append', { objectId, items: [item] });
+    // Локально в кэш сразу — сервер подтвердит при следующей сверке
+    data.applyLocalRecord(objectId, item);
     toast.ok('День записан' + (navigator.onLine ? '' : ' (уйдёт при связи)'));
     form.reset();
-    form.date.value = today();
+    dateInput.value = today();
     onChange();
   });
 }

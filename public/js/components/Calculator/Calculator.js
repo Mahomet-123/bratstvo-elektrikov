@@ -8,7 +8,7 @@
 
 import data from '../../db/dataManager.js';
 import queue from '../../cache/queue.js';
-import { el, qs, loadCss } from '../../utils/dom.js';
+import { el, qs, qsa, loadCss } from '../../utils/dom.js';
 import { money, unitLabel } from '../../utils/format.js';
 import toast from '../../utils/toast.js';
 
@@ -57,7 +57,7 @@ export function render(root, { objectId, onChange }) {
         <div class="calc__items"></div>
       </details>`);
     const itemsBox = qs('.calc__items', block);
-    items.filter(i => i.price > 0).forEach(item => itemsBox.appendChild(itemRow(item)));
+    items.filter(i => i.price > 0).forEach(item => itemsBox.appendChild(itemRow(item, root)));
     sectionsBox.appendChild(block);
   });
 
@@ -83,7 +83,7 @@ export function render(root, { objectId, onChange }) {
   qs('.calc__save', root).addEventListener('click', () => save(root, objectId, onChange));
 }
 
-function itemRow(item) {
+function itemRow(item, root) {
   const node = el(`
     <div class="calc__item" data-name="${item.name.toLowerCase()}">
       <div class="calc__item-info">
@@ -169,6 +169,8 @@ async function save(root, objectId, onChange) {
   }));
   // Расчёт всегда через очередь: работает и без связи, уйдёт при подключении
   await queue.enqueue('records:append', { objectId, items });
+  // Локально в кэш сразу — сервер подтвердит при следующей сверке
+  items.forEach(item => data.applyLocalRecord(objectId, item));
   toast.ok('Расчёт сохранён' + (navigator.onLine ? '' : ' (уйдёт при связи)'));
   draft = [];
   repaintDraft(root);

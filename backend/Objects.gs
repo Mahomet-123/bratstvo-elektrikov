@@ -48,7 +48,9 @@ const Objects = (() => {
       'Создан': new Date().toISOString(),
       'Закрыт': '',
     });
-    return { ok: true, id };
+    // Принудительно применяем запись: чтение таблицы может отставать на пару секунд
+    SpreadsheetApp.flush();
+    return { ok: true, id, object: byId(id) };
   }
 
   /** Изменить поля объекта в реестре. */
@@ -60,6 +62,7 @@ const Objects = (() => {
     h.forEach(key => {
       if (patch[key] !== undefined) sheet.getRange(row, h.indexOf(key) + 1).setValue(patch[key]);
     });
+    SpreadsheetApp.flush();
     return { ok: true };
   }
 

@@ -11,7 +11,7 @@ import Calculator from '../Calculator/Calculator.js';
 import DaysJournal from '../DaysJournal/DaysJournal.js';
 import Purchases from '../Purchases/Purchases.js';
 import ReportView from '../ReportView/ReportView.js';
-import { el, qs, loadCss } from '../../utils/dom.js';
+import { el, qs, qsa, loadCss } from '../../utils/dom.js';
 
 // Стили компонента: динамический <link> — браузер не умеет import CSS без сборщика
 loadCss('js/components/ObjectCard/styles/ObjectCard.css');
@@ -51,19 +51,22 @@ export async function render(root, objectId, { navigate }) {
     tabs.appendChild(button);
   });
 
+  // После записи: локально добавляем в кэш и перерисовываем,
+  // серверная сверка догонит — чтение таблицы отстаёт на пару секунд
   const afterChange = async () => {
-    data.dropObjectCache(objectId);
-    await data.objectRecords(objectId, { force: true });
-    openTab(activeTab, true);
+    const fresh = await data.syncRecords(objectId);
+    openTab(activeTab, true, fresh);
   };
 
   let activeTab = 'calc';
 
-  async function openTab(id, keepScroll = false) {
+  async function openTab(id, keepScroll = false, freshData = null) {
     activeTab = id;
     qsa('.objectcard__tab', root).forEach(b =>
       b.classList.toggle('objectcard__tab--active', b.dataset.tab === id));
-    const fresh = await data.objectRecords(objectId, { force: !keepScroll });
+    // Сверка вместо принудительного чтения: сначала кэш с локальными записями,
+    // серверные данные подтягиваются и сливаются — отставание таблицы не теряет записи
+    const fresh = freshData || await data.syncRecords(objectId);
     const options = { objectId, navigate, onChange: afterChange };
     if (id === 'calc') Calculator.render(body, options);
     if (id === 'days') DaysJournal.render(body, { ...options, records: fresh.records });
