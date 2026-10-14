@@ -1,0 +1,164 @@
+/* Компонент CabinetView — кабинет клиента по одноразовой ссылке */
+.cabinet {
+  display: grid;
+  gap: 12px;
+}
+
+.cabinet__loading {
+  padding: 24px 0;
+  font-size: 15px;
+  color: #64748b;
+  text-align: center;
+}
+
+.cabinet__head {
+  padding: 14px;
+  background-color: #0f3d2e;
+  color: #ffffff;
+  border-radius: 12px;
+}
+
+.cabinet__title {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.cabinet__meta {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.cabinet__block {
+  padding: 14px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.cabinet__block-title {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #0f3d2e;
+}
+
+.cabinet__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cabinet__table th,
+.cabinet__table td {
+  padding: 6px 4px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cabinet__days {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.cabinet__photos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.cabinet__photo img {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.cabinet__total {
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.8;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.cabinet__total-main {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f3d2e;
+}
+
+.cabinet__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cabinet__print,
+.cabinet__refresh {
+  flex: 1;
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.cabinet__print {
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+}
+
+.cabinet__refresh {
+  color: #0f3d2e;
+  background-color: #ecfdf5;
+  border: 1px solid #0f3d2e;
+}
+
+.cabinet__hint {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.cabinet__error {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.cabinet__error-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #0f3d2e;
+}
+
+.cabinet__error-text {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.cabinet__retry {
+  min-height: 44px;
+  padding: 0 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0f3d2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Печать: только кабинет, без интерфейса приложения */
+@media print {
+  .app__header,
+  .cabinet__actions,
+  .cabinet__hint {
+    display: none !important;
+  }
+  body {
+    background-color: #ffffff;
+  }
+}

@@ -16,8 +16,9 @@ loadCss('js/components/PhotoUploader/styles/PhotoUploader.css');
 /**
  * Виджет прикрепления фото. onAdd(photo) вызывается для каждого сжатого снимка:
  * photo = {base64, mime, size, previewUrl}
+ * onRemove(photo) — когда снимок убрали кнопкой «×».
  */
-export function mount(container, { onAdd }) {
+export function mount(container, { onAdd, onRemove }) {
   container.innerHTML = `
     <div class="photos">
       <div class="photos__previews"></div>
@@ -40,7 +41,7 @@ export function mount(container, { onAdd }) {
         previews.appendChild(previewNode(photo, () => {
           const i = pending.indexOf(photo);
           if (i >= 0) pending.splice(i, 1);
-          onRemove(photo);
+          if (onRemove) onRemove(photo);
         }));
         toast.ok(`Фото сжато до ${Math.round(photo.size / 1024)} КБ (${photo.mime === 'image/webp' ? 'WebP' : 'JPEG'})`);
       } catch (e) {

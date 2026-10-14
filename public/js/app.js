@@ -13,6 +13,7 @@ import Login from './components/Login/Login.js';
 import ObjectsList from './components/ObjectsList/ObjectsList.js';
 import ObjectCard from './components/ObjectCard/ObjectCard.js';
 import LeaderPanel from './components/LeaderPanel/LeaderPanel.js';
+import CabinetView from './components/CabinetView/CabinetView.js';
 import SyncIndicator from './components/SyncIndicator/SyncIndicator.js';
 import { qs } from './utils/dom.js';
 import toast from './utils/toast.js';
@@ -26,6 +27,21 @@ function navigate(hash) {
 
 async function route() {
   const hash = location.hash || '#/objects';
+
+  // Кабинет клиента по одноразовой ссылке — публичный маршрут, без входа.
+  // Проверяем до сессии: клиент открывает ссылку без логина и пароля.
+  if (hash.startsWith('#/cabinet/')) {
+    const parts = hash.split('/'); // ['#', 'cabinet', objectId, key]
+    const objectId = decodeURIComponent(parts[2] || '');
+    const key = decodeURIComponent(parts[3] || '');
+    try {
+      await CabinetView.render(root, objectId, key);
+    } catch (e) {
+      root.innerHTML = `<p class="app__error">${e.message}</p>`;
+    }
+    return;
+  }
+
   if (!data.state.token) {
     SyncIndicator.mount(headerRight);
     await Login.render(root, () => route());

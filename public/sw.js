@@ -6,7 +6,7 @@
  * ============================================
  */
 
-const CACHE = 'bratstvo-v2';
+const CACHE = 'bratstvo-v3';
 const SHELL = [
   './',
   'index.html',
@@ -30,21 +30,39 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Оболочка — из кэша, остальное — сеть с откатом на кэш
+/**
+ * Перехват запросов:
+ *  - не-GET и чужие адреса (API, фото на Drive) — не наше дело, отдаём браузеру;
+ *    иначе fetch в воркере падает на CORS и ломает загрузку картинок;
+ *  - оболочка — из кэша, чтобы приложение открывалось без сети;
+ *  - остальные файлы приложения — сначала сеть (свежая версия), при неудаче — кэш.
+ */
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
+  const request = event.request;
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  const isShell = request.mode === 'navigate' || SHELL.some(path => url.pathname.endsWith(path.replace('./', '/'))) || url.pathname === '/';
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      const network = fetch(event.request)
-        .then(response => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE).then(cache => cache.put(event.request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    (isShell
+      ? caches.match(request).then(cached =>
+          cached || fetch(request).then(network => {
+            const copy = network.clone();
+            caches.open(CACHE).then(cache => cache.put(request, copy));
+            return network;
+          }))
+      : fetch(request)
+          .then(network => {
+            if (network && network.ok) {
+              const copy = network.clone();
+              caches.open(CACHE).then(cache => cache.put(request, copy));
+            }
+            return network;
+          })
+          .catch(() => caches.match(request))
+    ).catch(() => caches.match(request))
   );
 });

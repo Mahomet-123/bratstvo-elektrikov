@@ -7,7 +7,6 @@
  * ============================================
  */
 
-import config from '../../config.js';
 import { el, qs, fmtDate, loadCss } from '../../utils/dom.js';
 import { money } from '../../utils/format.js';
 
@@ -93,12 +92,12 @@ export function render(root, { objectId, object, records }) {
   });
 }
 
+/**
+ * Ссылка на кабинет клиента внутри нашего PWA — без промежуточной страницы Google.
+ * Маршрут #/cabinet/:id/:token работает без входа (проверка по токену объекта).
+ */
 function apiUrlCabinet(objectId, token) {
-  const url = new URL(config.API_URL);
-  url.searchParams.set('page', 'cabinet');
-  url.searchParams.set('object', objectId);
-  url.searchParams.set('key', token);
-  return url.toString();
+  return location.origin + location.pathname + '#/cabinet/' + encodeURIComponent(objectId) + '/' + encodeURIComponent(token);
 }
 
 /** Сокращение ссылки через бесплатный сервис clck.ru (отдаёт короткий адрес текстом). */

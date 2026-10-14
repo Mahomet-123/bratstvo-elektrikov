@@ -8,15 +8,29 @@
 
 import api from '../api/apiClient.js';
 
+// Краткая мемоизация bootstrap: при входе прайс и объекты запрашиваются
+// подряд — отвечаем одним запросом, а не двумя (каждый ответ ~2–4 с)
+let bootMemo = null;
+let bootAt = 0;
+const BOOT_TTL_MS = 10000;
+
 const sheets = {
   /** Вход: логин + код доступа → токен сессии. */
   login(login, code) {
+    bootMemo = null; // новый пользователь — прежний ответ bootstrap не годится
     return api.post('login', { login, code, device: navigator.userAgent });
   },
 
   /** Полная загрузка при входе: пользователь, прайс, объекты. */
   bootstrap(token) {
-    return api.get('bootstrap', { token });
+    const now = Date.now();
+    if (bootMemo && now - bootAt < BOOT_TTL_MS) return bootMemo;
+    bootMemo = api.get('bootstrap', { token }).then(result => {
+      if (!result || !result.ok) { bootMemo = null; }
+      return result;
+    }).catch(e => { bootMemo = null; throw e; });
+    bootAt = now;
+    return bootMemo;
   },
 
   loginOptions() {
@@ -72,6 +86,11 @@ const sheets = {
 
   statusReport(token, pending, comment) {
     return api.post('status:report', { token, pending, comment });
+  },
+
+  /** Кабинет клиента по одноразовой ссылке — без токена (публичный маршрут). */
+  cabinetData(objectId, key) {
+    return api.get('cabinet', { object: objectId, key });
   },
 
   /** Последние снимки очереди по мастерам (панель руководителя). */

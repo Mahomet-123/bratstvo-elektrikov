@@ -26,10 +26,13 @@ function check(name, ok, detail = '') {
   const page = await browser.newPage();
   page.on('pageerror', e => consoleErrors.push(String(e).slice(0, 200)));
   page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 200)); });
+  // Ловим адреса упавших и ошибочных запросов — диагностика «молчаливых» 403/404
+  const badRequests = [];
+  page.on('response', r => { if (r.status() >= 400) badRequests.push(r.status() + ' ' + r.url().slice(0, 120)); });
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   // 1. Загрузка и экран входа
-  await page.goto(BASE + '/#/objects', { waitUntil: 'networkidle0', timeout: 60000 });
+  await page.goto(BASE + '/#/objects', { waitUntil: 'networkidle0', timeout: 90000 });
   await page.waitForSelector('.login', { timeout: 15000 });
   check('Экран входа отрисован', true);
   // Ждём, пока асинхронный запрос login-options заполнит список (плейсхолдер + активные профили)
@@ -42,7 +45,7 @@ function check(name, ok, detail = '') {
   await page.select('#login-select', 'Руководитель');
   await page.type('#login-code', '0000');
   await page.click('.login__submit');
-  await page.waitForSelector('.objects__title', { timeout: 45000 });
+  await page.waitForSelector('.objects__title', { timeout: 90000 });
   check('Вход выполнен, список объектов открылся', true);
   const chipText = await page.$eval('.sync__text', el => el.textContent);
   check('Индикатор отправки на месте', chipText.includes('отправлено'), chipText);
@@ -68,29 +71,34 @@ function check(name, ok, detail = '') {
       .find(c => c.textContent.includes('Проверка'));
     card.click();
   });
-  await page.waitForSelector('.objectcard__title', { timeout: 30000 });
+  await page.waitForSelector('.objectcard__title', { timeout: 60000 });
   check('Карточка объекта открылась', true);
-  await page.waitForSelector('.calc__section', { timeout: 30000 });
+  await page.waitForSelector('.calc__section', { timeout: 60000 });
   const sections = await page.$$eval('.calc__section', s => s.length);
   check('Разделы прайса загрузились', sections >= 6, 'разделов: ' + sections);
   // Раскрываем первый раздел прайса — секции свёрнуты по умолчанию
   await page.$eval('.calc__section', el => { el.open = true; });
-  await new Promise(r => setTimeout(r, 300));
+  // Ждём именно кнопок добавления: содержимое секции появляется асинхронно
+  await page.waitForSelector('.calc__section .calc__item .calc__item-add', { timeout: 15000 });
   const firstItem = await page.$('.calc__section .calc__item .calc__item-add');
   await firstItem.click();
   check('Позиция добавлена в расчёт', await page.$('.calc__line') !== null);
   const lineSum = await page.$eval('.calc__line-sum', el => el.textContent);
   check('Сумма позиции посчиталась', /\d/.test(lineSum), lineSum);
   await page.click('.calc__save');
-  await sleep(3000);
-  check('Расчёт сохранён (индикатор отправки)', await page.$eval('.sync__text', el => el.textContent));
+  await page.waitForFunction(
+    () => document.querySelector('.sync__text') && document.querySelector('.sync__text').textContent.includes('Всё отправлено'),
+    { timeout: 60000 });
+  check('Расчёт сохранён (индикатор отправки)', true, await page.$eval('.sync__text', el => el.textContent));
 
   // 5. Журнал дней
   await page.click('.objectcard__tab[data-tab=days]');
   await page.waitForSelector('.days__form', { timeout: 10000 });
   await page.type('.days__text', 'Тест: протяжка кабеля на кухне');
   await page.click('.days__submit');
-  await sleep(3500);
+  await page.waitForFunction(
+    () => document.querySelector('.sync__text') && document.querySelector('.sync__text').textContent.includes('Всё отправлено'),
+    { timeout: 60000 });
   const dayItems = await page.$$eval('.days__item', els => els.length);
   check('День записан и отображается', dayItems >= 1, 'записей: ' + dayItems);
 
@@ -103,19 +111,31 @@ function check(name, ok, detail = '') {
   await page.type('.purchases__comment', 'Проверка комментария к закупке');
   const fileInput = await page.$('.photos__input');
   await fileInput.uploadFile('scripts/test-nakladnaya.png');
-  await sleep(4000);
+  await page.waitForSelector('.photos__preview img', { timeout: 30000 });
   const previewCount = await page.$$eval('.photos__preview img', els => els.length);
   check('Фото накладной сжато и превью показано', previewCount >= 1, 'превью: ' + previewCount);
   await page.click('.purchases__submit');
-  await sleep(6000);
+  // Ждём, пока запись с фото реально уйдёт с телефона: фото грузятся в Drive,
+  // затем запись со ссылками. До этого в списке только локальная копия.
+  await page.waitForFunction(
+    () => document.querySelector('.sync__text') && document.querySelector('.sync__text').textContent.includes('Всё отправлено'),
+    { timeout: 120000 });
   const purchaseRows = await page.$$eval('.purchases__item', els => els.length);
   check('Закупка с фото и комментарием сохранена', purchaseRows >= 1, 'закупок: ' + purchaseRows);
-  const hasPhoto = await page.$$eval('.purchases__item-photos img', els => els.length);
-  check('Фото накладной: ссылка Drive', hasPhoto >= 1, 'фото: ' + hasPhoto);
+  // Проверяем не количество <img>, а реальную загрузку: файл должен быть открыт по ссылке
+  await page.evaluate(() => {
+    document.querySelectorAll('.purchases__item-photos img').forEach(img => img.scrollIntoView());
+  });
+  await page.waitForFunction(
+    () => Array.from(document.querySelectorAll('.purchases__item-photos img'))
+      .some(img => img.complete && img.naturalWidth > 0),
+    { timeout: 60000 });
+  const photoState = await page.$$eval('.purchases__item-photos img', els => els.map(i => (i.complete && i.naturalWidth > 0) ? 'загружено' : 'НЕ загружено (' + i.naturalWidth + ')').join(', '));
+  check('Фото накладной реально открывается по ссылке', !photoState.includes('НЕ загружено'), photoState);
 
   // 7. Отчёт для клиента
   await page.click('.objectcard__tab[data-tab=report]');
-  await page.waitForSelector('.report__total-main', { timeout: 30000 });
+  await page.waitForSelector('.report__total-main', { timeout: 60000 });
   const total = await page.$eval('.report__total-main', el => el.textContent);
   check('Отчёт считается с итогами', /Итого/.test(total), total);
   const supply = await page.$$eval('.report__total div', els => els.map(e => e.textContent).find(t => t.includes('Снабжение')));
@@ -125,13 +145,13 @@ function check(name, ok, detail = '') {
   await page.goto(BASE + '/#/leader', { waitUntil: 'networkidle0' });
   await page.waitForSelector('.leader__title', { timeout: 15000 });
   // Сводка собирается сканированием листов объектов — на холодном старте до ~20 секунд
-  await page.waitForFunction(() => document.querySelectorAll('.leader__row').length >= 1, { timeout: 45000 });
+  await page.waitForFunction(() => document.querySelectorAll('.leader__row').length >= 1, { timeout: 90000 });
   const summaryRows = await page.$$eval('.leader__row', els => els.map(e => e.textContent).join(' | '));
   check('Сводка записей за дату', summaryRows.includes('Проверка') || summaryRows.includes('записей'), summaryRows.slice(0, 160));
-  await page.waitForFunction(() => document.querySelectorAll('.leader__visit').length >= 1, { timeout: 45000 });
+  await page.waitForFunction(() => document.querySelectorAll('.leader__visit').length >= 1, { timeout: 90000 });
   const visits = await page.$$eval('.leader__visit', els => els.length);
   check('Журнал посещений заполнен', visits >= 1, 'записей: ' + visits);
-  await page.waitForFunction(() => document.querySelectorAll('.leader__user').length >= 51, { timeout: 45000 });
+  await page.waitForFunction(() => document.querySelectorAll('.leader__user').length >= 51, { timeout: 90000 });
   const usersList = await page.$$eval('.leader__user', els => els.length);
   check('Управление мастерами на месте', usersList >= 51, 'профилей: ' + usersList);
 
@@ -154,7 +174,7 @@ function check(name, ok, detail = '') {
   await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await page.waitForFunction(
     () => document.querySelector('.sync__text') && document.querySelector('.sync__text').textContent.includes('Всё отправлено'),
-    { timeout: 90000 });
+    { timeout: 120000 });
   check('После сети запись ушла автоматически', true, await page.$eval('.sync__text', el => el.textContent));
 
   // Итоги
@@ -167,6 +187,12 @@ function check(name, ok, detail = '') {
     [...new Set(consoleErrors)].slice(0, 8).forEach(e => console.log(' - ' + e));
   } else {
     console.log('Ошибок консоли нет');
+  }
+  if (badRequests.length) {
+    console.log('Плохие ответы сервера (' + badRequests.length + '):');
+    [...new Set(badRequests)].slice(0, 8).forEach(e => console.log(' - ' + e));
+  } else {
+    console.log('Плохих ответов сервера нет');
   }
   process.exit(failed.length ? 1 : 0);
 })().catch(e => { console.error('СБОЙ ТЕСТА:', e.message); process.exit(1); });

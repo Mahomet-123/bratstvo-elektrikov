@@ -9,7 +9,8 @@
 const Cabinet = (() => {
 
   /**
-   * HTML-страница кабинета клиента. Работает, пока объект не закрыт.
+   * HTML-страница кабинета клиента (запасной вариант — если откроют прямой
+   * адрес API). Работает, пока объект не закрыт.
    * @param {object} params — {object, key}
    */
   function page(params) {
@@ -32,11 +33,20 @@ const Cabinet = (() => {
     const supply = purchasesSum > 0 ? Math.max(purchasesSum * 0.1, 1500) : 0;
     const total = worksSum + purchasesSum + supply;
 
+    // Превью встраиваем в страницу: прямые ссылки Drive браузер блокирует (CORP).
+    // Полный размер — по клику, там работает обычная навигация.
     const photos = purchases
-      .flatMap(p => p.photoIds.split(',').filter(Boolean).map(id => Photos.url(id.trim())))
-      .map(url => `<a class="cabinet__photo" href="${url}" target="_blank" rel="noopener">
-        <img src="${url}" alt="Накладная" loading="lazy">
-      </a>`).join('');
+      .flatMap(p => p.photoIds.split(',').filter(Boolean).map(id => id.trim()))
+      .map(id => {
+        let src = '';
+        try {
+          const t = Photos.thumb(id);
+          if (t && t.ok) src = 'data:' + t.mime + ';base64,' + t.data;
+        } catch (e) { /* файл недоступен — покажем пустой мини-блок */ }
+        return `<a class="cabinet__photo" href="${Photos.url(id)}" target="_blank" rel="noopener">
+        <img src="${src}" alt="Накладная" loading="lazy">
+      </a>`;
+      }).join('');
 
     return html(`
       <header class="cabinet__head">
@@ -72,6 +82,44 @@ const Cabinet = (() => {
     `);
   }
 
+  /**
+   * Данные кабинета клиента в JSON — для показа внутри PWA (наш домен,
+   * без промежуточной страницы Google). Так же, как page(), но без HTML.
+   * @param {string} objectId
+   * @param {string} key
+   * @returns {{ok: boolean, error?: string, object?, records?, totals?}}
+   */
+  function data(objectId, key) {
+    const obj = Objects.byId(objectId);
+    if (!obj || obj.token !== String(key || '')) {
+      return { ok: false, error: 'Ссылка недействительна. Попросите мастера прислать новую.' };
+    }
+    if (obj.status === 'закрыт') {
+      return { ok: false, error: 'Объект закрыт. Работы завершены, спасибо за сотрудничество!' };
+    }
+    const records = Records.list(obj.id);
+    const works = records.filter(r => r.type === 'РАСЧЁТ' && !r.flags.includes('удалено'));
+    const days = records.filter(r => r.type === 'ДЕНЬ').sort((a, b) => a.date.localeCompare(b.date));
+    const purchases = records.filter(r => r.type === 'ЗАКУПКА' && !r.flags.includes('удалено'))
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    const worksSum = works.reduce((s, r) => s + r.sum, 0);
+    const purchasesSum = purchases.reduce((s, r) => s + r.sum, 0);
+    // Правило прайса №203: снабжение материалом — 10% от стоимости материалов, минимум 1500 ₽
+    const supply = purchasesSum > 0 ? Math.max(purchasesSum * 0.1, 1500) : 0;
+    return {
+      ok: true,
+      object: obj,
+      records: { works, days, purchases },
+      totals: {
+        works: worksSum,
+        purchases: purchasesSum,
+        supply: supply,
+        total: worksSum + purchasesSum + supply,
+      },
+    };
+  }
+
   function html(body) {
     return HtmlService.createHtmlOutput(`<!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8">
@@ -100,5 +148,5 @@ const Cabinet = (() => {
     }[c]));
   }
 
-  return { page };
+  return { page, data };
 })();

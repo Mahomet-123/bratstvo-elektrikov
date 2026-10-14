@@ -9,6 +9,7 @@
 import data from '../../db/dataManager.js';
 import queue from '../../cache/queue.js';
 import PhotoUploader from '../PhotoUploader/PhotoUploader.js';
+import { driveUrl, mountPhotos } from '../../utils/photo.js';
 import { el, qs, fmtDate, loadCss } from '../../utils/dom.js';
 import { money } from '../../utils/format.js';
 import toast from '../../utils/toast.js';
@@ -44,11 +45,17 @@ export function render(root, { objectId, records, onChange }) {
 
   const uploader = PhotoUploader.mount(qs('.purchases__photos', root), {
     onAdd: photo => { photos.push(photo); },
+    onRemove: photo => {
+      const i = photos.indexOf(photo);
+      if (i >= 0) photos.splice(i, 1);
+    },
   });
 
   const list = qs('.purchases__list', root);
   if (!purchases.length) list.appendChild(el('<p class="purchases__empty">Закупок пока нет</p>'));
   purchases.forEach(p => list.appendChild(purchaseRow(p)));
+  // Фото накладных: содержимое приходит через API (прямые ссылки Drive браузер блокирует)
+  mountPhotos(root).catch(() => {});
 
   qs('.purchases__form', root).addEventListener('submit', async event => {
     event.preventDefault();
@@ -91,10 +98,7 @@ export function render(root, { objectId, records, onChange }) {
 }
 
 function purchaseRow(purchase) {
-  const photoLinks = purchase.photoIds
-    .split(',')
-    .filter(Boolean)
-    .map(id => `https://drive.google.com/uc?export=view&id=${id.trim()}`);
+  const photoIds = purchase.photoIds.split(',').map(id => id.trim()).filter(Boolean);
   return el(`
     <article class="purchases__item">
       <div class="purchases__item-head">
@@ -105,9 +109,9 @@ function purchaseRow(purchase) {
         ${purchase.qty} × ${money(purchase.price)} · ${fmtDate(purchase.date)} · ${purchase.user}
       </p>
       ${purchase.comment ? `<p class="purchases__item-comment">${purchase.comment}</p>` : ''}
-      ${photoLinks.length
-        ? `<div class="purchases__item-photos">${photoLinks
-            .map(url => `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="Накладная" loading="lazy"></a>`)
+      ${photoIds.length
+        ? `<div class="purchases__item-photos">${photoIds
+            .map(id => `<a href="${driveUrl(id)}" target="_blank" rel="noopener"><img data-photo="${id}" alt="Накладная" loading="lazy"></a>`)
             .join('')}</div>`
         : ''}
       ${purchase.flags.includes('возможный дубль') ? '<p class="purchases__item-flag">Возможный дубль</p>' : ''}

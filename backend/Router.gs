@@ -26,6 +26,19 @@ const Router = (() => {
       case 'object':
         requireUser(user);
         return { ok: true, object: Objects.byId(params.id), records: Records.list(params.id) };
+      case 'photo':
+        // Без токена: фото показываются и в кабинете клиента (публичная страница)
+        if (!params.id) throw new Error('Не указан файл');
+        return Photos.stream(params.id);
+      case 'photo-thumb':
+        if (!params.id) throw new Error('Не указан файл');
+        return Photos.thumb(params.id);
+      case 'cabinet':
+        // Кабинет клиента внутри PWA — по одноразовой ссылке (id объекта + токен), без входа
+        if (!params.object || !params.key) {
+          throw new Error('Ссылка недействительна. Попросите мастера прислать новую.');
+        }
+        return Cabinet.data(params.object, params.key);
       case 'day-summary':
         requireLeader(user);
         return { ok: true, summary: Records.daySummary(params.date), visits: Visits.recent(50) };
@@ -51,6 +64,9 @@ const Router = (() => {
       case 'photos:upload':
         requireUser(user);
         return Photos.upload(body.objectId, body.base64, body.mime);
+      case 'photos:fix-sharing':
+        requireLeader(user);
+        return Photos.fixSharing();
       case 'objects:create':
         requireLeader(user);
         return Objects.create(body.data || {});

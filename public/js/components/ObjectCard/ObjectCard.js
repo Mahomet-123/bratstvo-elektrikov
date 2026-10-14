@@ -55,7 +55,14 @@ export async function render(root, objectId, { navigate }) {
   // серверная сверка догонит — чтение таблицы отстаёт на пару секунд
   const afterChange = async () => {
     const fresh = await data.syncRecords(objectId);
-    openTab(activeTab, true, fresh);
+    // Не перерисовываем, если человек прямо сейчас что-то вводит или держит
+    // прикреплённое фото: перерисовка стёрла бы форму и очередь загрузки.
+    // Свежие данные подтянутся при следующем переключении вкладки.
+    const focused = document.activeElement;
+    const typing = !!(focused && body.contains(focused));
+    const filled = Array.from(body.querySelectorAll('input, textarea'))
+      .some(field => String(field.value || '').length > 0);
+    if (!typing && !filled) openTab(activeTab, true, fresh);
   };
 
   let activeTab = 'calc';
