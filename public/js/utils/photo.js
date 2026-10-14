@@ -18,13 +18,20 @@ export function driveUrl(fileId) {
 
 /**
  * Загрузить фото и превратить в data-URI для <img>.
+ * Таймаут 20 с: если ответ API подвиснет — запасной прямой ссылке шанс даём.
  * @param {string} fileId
  * @returns {Promise<string>} — data:image/...;base64,...
  */
 export async function photoDataUri(fileId) {
-  const result = await api.get('photo', { id: fileId });
-  if (!result || !result.ok || !result.data) throw new Error((result && result.error) || 'Фото недоступно');
-  return 'data:' + (result.mime || 'image/jpeg') + ';base64,' + result.data;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+  try {
+    const result = await api.get('photo', { id: fileId }, { signal: controller.signal });
+    if (!result || !result.ok || !result.data) throw new Error((result && result.error) || 'Фото недоступно');
+    return 'data:' + (result.mime || 'image/jpeg') + ';base64,' + result.data;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**

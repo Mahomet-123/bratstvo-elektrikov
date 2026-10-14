@@ -122,16 +122,20 @@ function check(name, ok, detail = '') {
     { timeout: 120000 });
   const purchaseRows = await page.$$eval('.purchases__item', els => els.length);
   check('Закупка с фото и комментарием сохранена', purchaseRows >= 1, 'закупок: ' + purchaseRows);
-  // Проверяем не количество <img>, а реальную загрузку: файл должен быть открыт по ссылке
+  // Проверяем не количество <img>, а реальную загрузку: файл должен быть открыт по ссылке.
+  // Ждём ВСЕ фото: заглушка mountPhotos — 1×1 px (naturalWidth = 1), настоящие крупнее.
   await page.evaluate(() => {
     document.querySelectorAll('.purchases__item-photos img').forEach(img => img.scrollIntoView());
   });
   await page.waitForFunction(
-    () => Array.from(document.querySelectorAll('.purchases__item-photos img'))
-      .some(img => img.complete && img.naturalWidth > 0),
-    { timeout: 60000 });
-  const photoState = await page.$$eval('.purchases__item-photos img', els => els.map(i => (i.complete && i.naturalWidth > 0) ? 'загружено' : 'НЕ загружено (' + i.naturalWidth + ')').join(', '));
-  check('Фото накладной реально открывается по ссылке', !photoState.includes('НЕ загружено'), photoState);
+    () => {
+      const imgs = Array.from(document.querySelectorAll('.purchases__item-photos img'));
+      return imgs.length > 0 && imgs.every(img => img.complete && img.naturalWidth > 1);
+    },
+    { timeout: 90000 });
+  const photoState = await page.$$eval('.purchases__item-photos img', els => els.map(i => (i.complete && i.naturalWidth > 1) ? 'загружено' : 'НЕ загружено (' + i.naturalWidth + ')').join(', '));
+  const photoOk = photoState.length > 0 && photoState.split(', ').every(s => s === 'загружено');
+  check('Фото накладной реально открывается по ссылке', photoOk, photoState);
 
   // 7. Отчёт для клиента
   await page.click('.objectcard__tab[data-tab=report]');
@@ -141,8 +145,20 @@ function check(name, ok, detail = '') {
   const supply = await page.$$eval('.report__total div', els => els.map(e => e.textContent).find(t => t.includes('Снабжение')));
   check('Правило 203 в отчёте', !!supply, supply || '');
 
+  // 7a. Ссылка для клиента: сокращение clck.ru + редирект в кабинет PWA
+  await page.click('.report__link');
+  await page.waitForSelector('.report__url', { timeout: 30000 });
+  const clientUrl = await page.$eval('.report__url', a => a.href);
+  const looksRight = /clck\.ru\//.test(clientUrl) || /#\/cabinet\/[0-9a-f-]+\//.test(clientUrl);
+  check('Ссылка для клиента получена (сокращение или полная)', looksRight, clientUrl.slice(0, 60));
+  // Проходим по ссылке как клиент: должен открыться кабинет без входа
+  await page.goto(clientUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForSelector('.cabinet__title, .cabinet__error-title', { timeout: 90000 });
+  const cabinetOk = await page.$('.cabinet__title') !== null;
+  check('По ссылке открывается кабинет клиента без входа', cabinetOk);
+
   // 8. Панель руководителя
-  await page.goto(BASE + '/#/leader', { waitUntil: 'networkidle0' });
+  await page.goto(BASE + '/#/leader', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForSelector('.leader__title', { timeout: 15000 });
   // Сводка собирается сканированием листов объектов — на холодном старте до ~20 секунд
   await page.waitForFunction(() => document.querySelectorAll('.leader__row').length >= 1, { timeout: 90000 });
@@ -156,7 +172,7 @@ function check(name, ok, detail = '') {
   check('Управление мастерами на месте', usersList >= 51, 'профилей: ' + usersList);
 
   // 9. Офлайн-очередь: пишем без сети, проверяем индикатор, возвращаем сеть
-  await page.goto(BASE + '/#/objects', { waitUntil: 'networkidle0' });
+  await page.goto(BASE + '/#/objects', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.evaluate(() => {
     const card = Array.from(document.querySelectorAll('.objects__card')).find(c => c.textContent.includes('Проверка'));
     card.click();

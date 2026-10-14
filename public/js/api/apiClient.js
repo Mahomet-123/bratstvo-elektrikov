@@ -10,11 +10,11 @@ import config from '../config.js';
 
 const api = {
   /** GET-действие: ?action=...&token=... */
-  async get(action, params = {}) {
+  async get(action, params = {}, options = {}) {
     const url = new URL(config.API_URL);
     url.searchParams.set('action', action);
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    const response = await fetch(url, { redirect: 'follow' });
+    const response = await fetch(url, { redirect: 'follow', signal: options.signal });
     return response.json();
   },
 
