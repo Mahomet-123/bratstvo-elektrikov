@@ -31,9 +31,12 @@ const SITE = process.env.SITE || 'https://mahomet-123.github.io/bratstvo-elektri
     if (card) card.click();
   });
   await page.waitForSelector('.objectcard__title', { timeout: 90000 });
+  console.log('карточка объекта: ок');
   await page.click('.objectcard__tab[data-tab=report]');
   await page.waitForSelector('.report__link', { timeout: 90000 });
+  console.log('вкладка отчёта: ок');
   await page.click('.report__link');
+  console.log('клик по «Ссылка для клиента»: ок');
 
   // Ждём сокращённую ссылку (или запасной вариант — полную)
   await page.waitForFunction(
@@ -41,7 +44,16 @@ const SITE = process.env.SITE || 'https://mahomet-123.github.io/bratstvo-elektri
       const a = document.querySelector('.report__url');
       return a && a.href && a.href.length > 10;
     },
-    { timeout: 180000 });
+    { timeout: 60000 }).catch(async () => {
+      const state = await page.evaluate(() => ({
+        out: (document.querySelector('.report__link-out') || {}).textContent || '(блока нет)',
+        outHidden: (document.querySelector('.report__link-out') || {}).hidden,
+        hasBtn: !!document.querySelector('.report__link'),
+        url: location.href,
+      }));
+      console.log('СБОЙ ожидания ссылки:', JSON.stringify(state));
+      throw new Error('ссылка не появилась');
+    });
 
   const link = await page.$eval('.report__url', a => ({ href: a.href, text: a.textContent }));
   console.log('ссылка для клиента:', link.text);

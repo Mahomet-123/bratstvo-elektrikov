@@ -75,10 +75,14 @@ export function render(root, { objectId, object, records }) {
     try {
       const short = await shorten(long);
       out.innerHTML = '';
+      // Обёртка нужна из-за el(): помощник возвращает только первый элемент
+      // шаблона — без неё ссылка и кнопка «Копировать» потерялись бы.
       out.appendChild(el(`
-        <span>Ссылка для клиента (живёт до закрытия объекта):</span>
-        <a class="report__url" href="${short}" target="_blank" rel="noopener">${short}</a>
-        <button class="report__copy" type="button">Копировать</button>`));
+        <div class="report__link-row">
+          <span>Ссылка для клиента (живёт до закрытия объекта):</span>
+          <a class="report__url" href="${short}" target="_blank" rel="noopener">${short}</a>
+          <button class="report__copy" type="button">Копировать</button>
+        </div>`));
       qs('.report__copy', root).addEventListener('click', async () => {
         await navigator.clipboard.writeText(short);
         out.appendChild(el('<span class="report__copied">скопировано</span>'));
@@ -86,8 +90,10 @@ export function render(root, { objectId, object, records }) {
     } catch (e) {
       out.innerHTML = '';
       out.appendChild(el(`
-        <span>Не удалось сократить, вот полная ссылка:</span>
-        <a class="report__url" href="${long}" target="_blank" rel="noopener">${long}</a>`));
+        <div class="report__link-row">
+          <span>Не удалось сократить, вот полная ссылка:</span>
+          <a class="report__url" href="${long}" target="_blank" rel="noopener">${long}</a>
+        </div>`));
     }
   });
 }
@@ -100,11 +106,18 @@ function apiUrlCabinet(objectId, token) {
   return location.origin + location.pathname + '#/cabinet/' + encodeURIComponent(objectId) + '/' + encodeURIComponent(token);
 }
 
-/** Сокращение ссылки через бесплатный сервис clck.ru (отдаёт короткий адрес текстом). */
+/** Сокращение ссылки через бесплатный сервис clck.ru (отдаёт короткий адрес текстом).
+ *  Таймаут 10 с: если сервис подвиснет — покажем полную ссылку, а не «Сокращаю…» навсегда. */
 async function shorten(long) {
-  const response = await fetch('https://clck.ru/--?url=' + encodeURIComponent(long));
-  if (!response.ok) throw new Error('clck.ru недоступен');
-  return (await response.text()).trim();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch('https://clck.ru/--?url=' + encodeURIComponent(long), { signal: controller.signal });
+    if (!response.ok) throw new Error('clck.ru недоступен');
+    return (await response.text()).trim();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export default { render };
