@@ -7,6 +7,7 @@
     "seed": "python scripts/parse-price-pdf.py && python scripts/build-seed.py",
     "installer": "python scripts/build-installer.py",
     "check": "node scripts/check-syntax.js",
+    "test:e2e": "node scripts/test-e2e.js",
     "gas:push": "clasp push --force",
     "gas:deploy": "clasp deploy -i AKfycbyKdQWI77sm4DvsAN_ejI6aGx8oPMhvZhz9ps1kasZCfK3s9cNB7qJrN-his26Ue_Hn",
     "gas:open": "clasp open"
