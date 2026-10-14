@@ -38,23 +38,20 @@ export async function render(root, onDone) {
   root.innerHTML = html;
   const form = qs('.login', root);
 
-  // Список профилей — с сервера, при офлайне — последний использованный логин
-  try {
-    const result = await sheets.loginOptions();
-    options = (result.ok && result.users) || [];
-  } catch (e) {
-    const last = storage.local.get('lastLogin', '');
-    options = last ? [{ login: last, name: last, role: '' }] : [];
-  }
-  options.forEach(u => {
-    const option = document.createElement('option');
-    option.value = u.login;
-    option.textContent = u.name + (u.role === 'руководитель' ? ' (руководитель)' : '');
-    form.querySelector('#login-select').append(option);
-  });
+  // Пока профили грузятся, кнопка выключена — нажатие всё равно перехватывается
+  const submitBtn = qs('.login__submit', form);
+  submitBtn.disabled = true;
+  let optionsLoaded = false;
 
+  // Обработчик отправки вешаем ДО загрузки профилей: на медленной сети
+  // пользователь может нажать «Войти» раньше — иначе форма уйдёт нативной
+  // отправкой и страница перезагрузится, потеряв ввод.
   form.addEventListener('submit', async event => {
     event.preventDefault();
+    if (!optionsLoaded) {
+      toast.error('Список профилей ещё загружается, подождите пару секунд');
+      return;
+    }
     const login = qs('#login-select', form).value || qs('#login-select', form).textContent;
     const code = qs('#login-code', form).value;
     if (!login) { toast.error('Выберите профиль'); return; }
@@ -71,6 +68,24 @@ export async function render(root, onDone) {
       toast.error(e.message || 'Ошибка входа');
     }
   });
+
+  // Список профилей — с сервера, при офлайне — последний использованный логин
+  try {
+    const result = await sheets.loginOptions();
+    options = (result.ok && result.users) || [];
+    optionsLoaded = true;
+  } catch (e) {
+    const last = storage.local.get('lastLogin', '');
+    options = last ? [{ login: last, name: last, role: '' }] : [];
+    optionsLoaded = options.length > 0;
+  }
+  options.forEach(u => {
+    const option = document.createElement('option');
+    option.value = u.login;
+    option.textContent = u.name + (u.role === 'руководитель' ? ' (руководитель)' : '');
+    form.querySelector('#login-select').append(option);
+  });
+  submitBtn.disabled = false;
 }
 
 export default { render };
